@@ -1,45 +1,65 @@
 import java.util.HashSet;
 import java.util.Set;
 
-// Конкретна реалізація Flyweight — тип питання з КІЛЬКОМА правильними відповідями
-// Студент вводить відповіді через кому, наприклад: "Java, Python"
-// Так само як SingleAnswerType — один об'єкт на весь кеш
+// Конкретна реалізація Flyweight — тип питання з кількома правильними відповідями
+// Один об'єкт цього класу буде використовуватись для всіх таких питань
+// Студент вводить відповіді через кому (наприклад: "Java, Python")
 public class MultipleAnswerType implements QuestionType {
 
-    // Внутрішній стан — назва типу
+    // Внутрішній стан Flyweight
+    // Назва типу питання — однакова для всіх об'єктів цього типу
     private final String typeName = "Кілька правильних відповідей";
 
+    // Повертає назву типу питання
     @Override
     public String getTypeName() {
         return typeName;
     }
 
-    // Інструкція для студента
+    // Виводить інструкцію для студента
+    // Пояснює як правильно вводити відповідь
     @Override
     public void printInstruction() {
         System.out.println("  [Тип] Введіть всі правильні відповіді через кому");
     }
 
-    // Перевірка: збираємо множину правильних відповідей з питання,
-    // збираємо множину того що ввів студент, і порівнюємо їх
+    // Основний метод перевірки відповіді
+    // question — містить правильні варіанти (зовнішній стан)
+    // studentAnswer — рядок, який ввів студент
     @Override
     public boolean checkAnswer(Question question, String studentAnswer) {
 
-        // Збираємо правильні відповіді у Set (в нижньому регістрі)
+        // Множина правильних відповідей
+        // Set використовується, щоб:
+        // - не було дублікатів
+        // - порядок не мав значення
         Set<String> correctSet = new HashSet<>();
+
+        // Заповнюємо множину правильних відповідей
         for (Answer answer : question.getAnswers()) {
             if (answer.isCorrect()) {
+
+                // trim() — прибирає пробіли
+                // toLowerCase() — щоб не залежати від регістру
                 correctSet.add(answer.getText().trim().toLowerCase());
             }
         }
 
-        // Збираємо відповіді студента у Set
+        // Множина відповідей студента
         Set<String> studentSet = new HashSet<>();
+
+        // Розбиваємо рядок по комі
+        // Наприклад: "Java, Python" → ["Java", " Python"]
         for (String part : studentAnswer.split(",")) {
+
+            // Так само чистимо і переводимо в нижній регістр
             studentSet.add(part.trim().toLowerCase());
         }
 
-        // Множини мають повністю збігатися
+        // Порівнюємо множини
+        // Вони мають бути повністю однакові:
+        // - ті самі елементи
+        // - без зайвих і без пропущених
         return studentSet.equals(correctSet);
     }
 }
