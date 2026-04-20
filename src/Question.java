@@ -1,59 +1,82 @@
 import java.util.List;
 
 // Клас Question описує одне питання тесту
-// Всі оригінальні конструктори, getters, setters і toString збережені
+// Тут зберігається текст питання, варіанти відповідей
+// і тип питання (через Flyweight)
 public class Question {
 
-    // Текст питання, наприклад "2 + 2 = ?"
+    // Текст питання (наприклад: "2 + 2 = ?")
     private String text;
 
-    // Список варіантів відповідей
+    // Список відповідей до цього питання
+    // Кожен елемент — об'єкт класу Answer
     private List<Answer> answers;
 
-    // Посилання на Flyweight-об'єкт — тип питання
-    // Один і той самий об'єкт QuestionType використовується
-    // для всіх питань одного типу у всіх тестах
+    // Тип питання (Flyweight)
+    // Це не просто поле — це об'єкт, який перевикористовується
+    // для всіх питань одного типу (single, multiple, open)
     private QuestionType questionType;
 
-    // Порожній конструктор — як в лабі 2
+    // Порожній конструктор
+    // Потрібен, щоб можна було створити об'єкт без значень
     public Question() {
     }
 
-    // Оригінальний конструктор з лаби 2 — залишаємо для сумісності
+    // Старий конструктор з лаби 2
+    // Залишений для сумісності
     public Question(String text, List<Answer> answers) {
         this.text = text;
         this.answers = answers;
     }
 
-    // НОВИЙ конструктор — приймає ще й тип питання
-    // typeKey — один із рядків: "single", "multiple", "open"
-    // При виклику QuestionFactory.getType() об'єкт або береться з кешу або
-    // створюється
+    // Новий конструктор
+    // Додає можливість задати тип питання через ключ
+    // typeKey — це рядок ("single", "multiple", "open")
     public Question(String text, List<Answer> answers, String typeKey) {
+
         this.text = text;
         this.answers = answers;
+
+        // Отримуємо об'єкт типу через фабрику
+        // Тут або створиться новий об'єкт, або візьметься з кешу
         this.questionType = QuestionFactory.getType(typeKey);
     }
 
-    // Виводить питання на екран разом з інструкцією і варіантами
+    // Метод для виводу питання на екран
+    // Виводить:
+    // - текст питання
+    // - інструкцію (через Flyweight)
+    // - варіанти відповідей
     public void display() {
+
         System.out.println("  Питання: " + text);
+
+        // Якщо тип питання заданий — виводимо інструкцію
         if (questionType != null) {
             questionType.printInstruction();
         }
+
+        // Виводимо всі варіанти відповідей
         System.out.println("  Варіанти:");
         for (int i = 0; i < answers.size(); i++) {
             System.out.println("    " + (i + 1) + ") " + answers.get(i).getText());
         }
     }
 
-    // Перевіряє відповідь студента — делегує логіку Flyweight-об'єкту
+    // Метод перевірки відповіді студента
+    // Тут ми НЕ перевіряємо самі, а передаємо це Flyweight-об'єкту
     public boolean checkAnswer(String studentAnswer) {
+
+        // Якщо тип не заданий — повертаємо false
         if (questionType == null)
             return false;
+
+        // Делегуємо перевірку відповідному типу питання
         return questionType.checkAnswer(this, studentAnswer);
     }
 
+    // ---- Getters і setters ----
+    // Використовуються для доступу до приватних полів
 
     public String getText() {
         return text;
@@ -79,11 +102,16 @@ public class Question {
         this.questionType = questionType;
     }
 
+    // Перевизначення toString()
+    // Додаємо ще тип питання у вивід
     @Override
     public String toString() {
+
+        // Якщо тип є — додаємо його до рядка
         String type = (questionType != null)
                 ? " [" + questionType.getTypeName() + "]"
                 : "";
+
         return "Question: " + text + type + "\nAnswers: " + answers;
     }
 }
